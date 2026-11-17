@@ -24,7 +24,13 @@ load_dotenv()
 # Configuration
 COLLECTION_NAME = "multimodal_documents"
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
-VISION_MODEL_NAME = os.getenv("VISION_MODEL_NAME", "gemini-3-flash-preview")
+VISION_MODEL_CANDIDATES = [
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-lite-latest",
+    "gemini-3.8-flash",
+]
+VISION_MODEL_NAME = os.getenv("VISION_MODEL_NAME", VISION_MODEL_CANDIDATES[0])
 IMAGE_DIR = "rendered_pages"
 os.makedirs(IMAGE_DIR, exist_ok=True)
 
@@ -133,12 +139,39 @@ class MultimodalQdrantStore:
 
 
 class MultimodalRAGRunner:
-    """Executes comparative evaluation and generates side-by-side reports."""
+    """Executes comparative evaluation with intelligent multi-model failover."""
 
     def __init__(self, store: MultimodalQdrantStore):
         self.store = store
         self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
-        self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{VISION_MODEL_NAME}:generateContent?key={self.api_key}"
+        self.models = VISION_MODEL_CANDIDATES
+
+    def _call_gemini_with_failover(self, payload: Dict[str, Any]) -> str:
+        """Call Gemini API with automatic fallback across models on 429 or 503."""
+        last_error = ""
+        for model in self.models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
+            try:
+                r = requests.post(url, json=payload, timeout=35)
+                if r.status_code == 200:
+                    data = r.json()
+                    candidates = data.get("candidates", [])
+                    if candidates and "parts" in candidates[0].get("content", {}):
+                        return candidates[0]["content"]["parts"][0]["text"].strip()
+                    return "No content generated."
+                elif r.status_code in [429, 503]:
+                    last_error = f"Model {model} returned {r.status_code}"
+                    print(f"    [!] {last_error}, attempting fallback to next model...")
+                    import time
+                    time.sleep(1.5)
+                    continue
+                else:
+                    return f"[Error {r.status_code}]: {r.text[:200]}"
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+        return f"[Quota / Service Error]: All candidate models failed. Last error: {last_error}"
 
     def ask_text_only(self, query: str, text: str) -> str:
         """Query using standard text-only prompt."""
@@ -154,13 +187,7 @@ class MultimodalRAGRunner:
                 }]
             }]
         }
-        try:
-            r = requests.post(self.api_url, json=payload, timeout=30)
-            if r.status_code == 200:
-                return r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-            return f"[Error {r.status_code}]: {r.text}"
-        except Exception as e:
-            return f"[Network Error]: {e}"
+        return self._call_gemini_with_failover(payload)
 
     def ask_vision_enhanced(self, query: str, text: str, image_b64: str) -> str:
         """Query using multimodal prompt with rendered high-resolution image."""
@@ -184,13 +211,7 @@ class MultimodalRAGRunner:
                 ]
             }]
         }
-        try:
-            r = requests.post(self.api_url, json=payload, timeout=30)
-            if r.status_code == 200:
-                return r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-            return f"[Error {r.status_code}]: {r.text}"
-        except Exception as e:
-            return f"[Network Error]: {e}"
+        return self._call_gemini_with_failover(payload)
 
 
 def main():
