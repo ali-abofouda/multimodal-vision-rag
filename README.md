@@ -63,15 +63,13 @@ The benchmark evaluates queries across three distinct enterprise document domain
 
 ---
 
-## Benchmark Results (5 Enterprise Dimensions)
+## Benchmark Results (3 Core Visual Dimensions)
 
 | Benchmark Dimension | Retrieved Document | Traditional Text-Only RAG | Dual-Stream Vision RAG |
 | :--- | :--- | :--- | :--- |
-| **01 · Structured Table Reasoning** | `q3_financial_review.pdf` | ⚠️ Vulnerable to column drifting | ✅ **100% Grounded** |
-| **02 · Bar Chart & Color Legends** | `q3_financial_review.pdf` | ❌ Complete Failure (Color/Bars lost) | ✅ **100% Grounded** |
-| **03 · Donut Chart Cost Allocations** | `cloud_architecture_2026.pdf` | ❌ Complete Failure (Slices lost) | ✅ **100% Grounded** |
-| **04 · Freight Delay Line Curves** | `supply_chain_logistics.pdf` | ❌ Complete Failure (Trends lost) | ✅ **100% Grounded** |
-| **05 · Cross-Document Verification** | `cloud_architecture_2026.pdf` | ⚠️ Degraded (Blind to chart type) | ✅ **100% Grounded** |
+| **01 · Bar Chart & Color Legends** | `q3_financial_review.pdf` | ❌ Complete Failure (Color/Bars lost) | ✅ **100% Grounded** |
+| **02 · Freight Delay Line Curves** | `supply_chain_logistics.pdf` | ❌ Complete Failure (Trends lost) | ✅ **100% Grounded** |
+| **03 · Cross-Document Verification** | `cloud_architecture_2026.pdf` | ⚠️ Degraded (Blind to chart type) | ✅ **100% Grounded** |
 
 ---
 

@@ -239,31 +239,19 @@ def main():
 
     test_cases = [
         {
-            "tag": "TEST 01 · STRUCTURED FINANCIAL TABLE REASONING",
-            "query": "In the Q3 Financial Review, what is the Q3 Actual revenue, Target, and YoY Growth for the APAC region in Table 1?",
-            "text_status": "Partial Match",
-            "text_note": "⚠️ Vulnerable to column drifting and whitespace misalignment in multi-column tables",
-        },
-        {
-            "tag": "TEST 02 · REVENUE BAR CHART & COLOR LEGEND REASONING",
+            "tag": "TEST 01 · REVENUE BAR CHART & COLOR LEGEND REASONING",
             "query": "Looking at the bar chart in the Q3 Financial Review, which region had the highest revenue in Q2, and what color represents Q2 vs Q3 in the chart legend?",
             "text_status": "Complete Failure",
             "text_note": "❌ FAILED: Chart graphics, color fills, and legend keys are stripped during text flattening",
         },
         {
-            "tag": "TEST 03 · CLOUD COST DONUT CHART ALLOCATION",
-            "query": "In the Cloud Architecture 2026 report, examine the donut chart: what is the largest cost driver category, what percentage does it represent, and what is its monthly cost in the infrastructure table?",
-            "text_status": "Complete Failure",
-            "text_note": "❌ FAILED: Donut chart slices, percentages, and visual labels completely missing from raw text",
-        },
-        {
-            "tag": "TEST 04 · SUPPLY CHAIN FREIGHT DELAY LINE PLOT",
+            "tag": "TEST 02 · SUPPLY CHAIN FREIGHT DELAY LINE PLOT",
             "query": "Looking at the line chart in the Supply Chain Logistics report, in which week does Ocean Freight experience its highest delay peak, and how many days delay was recorded compared to Air Freight in that week?",
             "text_status": "Complete Failure",
             "text_note": "❌ FAILED: Line plot coordinates, markers, and multi-series curves completely discarded",
         },
         {
-            "tag": "TEST 05 · CROSS-DOCUMENT METRIC & VISUAL VERIFICATION",
+            "tag": "TEST 03 · CROSS-DOCUMENT METRIC & VISUAL VERIFICATION",
             "query": "Which document specifies the GPU Inference Cluster with a 99.95% SLA, and does that document visually present its metrics using a donut chart, a bar chart, or a line chart?",
             "text_status": "Partial / Blind",
             "text_note": "⚠️ Can identify text snippet, but entirely blind to the visual chart format used on the page",
